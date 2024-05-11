@@ -3,12 +3,13 @@
 
 typedef enum{UPWARD, DOWNWARD, LEFT, RIGHT,STILL} direc;
 
+float X_cord;
+float Y_cord;
 
 class Pac
 {
 public:
-    float X_cord;
-    float Y_cord;
+    
     direc pacDirect;
     direc nexDirect;
     float angle;
@@ -56,7 +57,7 @@ public:
         }
         else if(temp==T)
         {
-            std::cout<<X_cord<<" "<<Y_cord<<std::endl;
+            
             if(round(X_cord)==1)
             {
                 X_cord=26;
@@ -91,24 +92,7 @@ public:
         glPopMatrix();
        
     }
-    tile getFollowingTile(direc dir)
-    {
-        switch(dir) {
-            case LEFT: return getTile((round(X_cord)) - 1, round(Y_cord));
-            case UPWARD: return getTile(round(X_cord), (round(Y_cord)) + 1);
-            case RIGHT: return getTile((round(X_cord))+1, round(Y_cord));
-            case DOWNWARD: return getTile(round(X_cord), round(Y_cord) - 1);
-            default: return getTile(round(X_cord), round(Y_cord));
-        }
-    }
-    bool isWall(direc dir)
-    {
-        if (getFollowingTile(dir) == W || getFollowingTile(dir) == G) {
-            return true;
-        }
-
-        return false;
-    }
+    
     
      bool isAtCenter()
     {
@@ -125,7 +109,24 @@ public:
     }
 };
 
+    tile getFollowingTile(direc dir,float x, float y)
+    {
+        switch(dir) {
+            case LEFT: return getTile((round(x)) - 1, round(y));
+            case UPWARD: return getTile(round(x), (round(y)) + 1);
+            case RIGHT: return getTile((round(x))+1, round(y));
+            case DOWNWARD: return getTile(round(x), round(y) - 1);
+            default: return getTile(round(x), round(y));
+        }
+    }
+    bool isWall(direc dir,float x, float y)
+    {
+        if (getFollowingTile(dir,x,y) == W || getFollowingTile(dir,x,y) == G) {
+            return true;
+        }
 
+        return false;
+    }
 
 void* Pacmove(void* pac_void)
 {
@@ -133,14 +134,14 @@ void* Pacmove(void* pac_void)
     while(1)
     {
         if(pac->isAtCenter()) {
-    if (!(pac->isWall(pac->nexDirect))) { // If the direction pacman wants to go in is not a wall, set that direction
+    if (!(isWall(pac->nexDirect,X_cord,Y_cord))) { // If the direction pacman wants to go in is not a wall, set that direction
                 {pac->pacDirect = pac->nexDirect;}
-            } else if (pac->isWall(pac->pacDirect)) {
+            } else if (isWall(pac->pacDirect,X_cord,Y_cord)) {
                 pac->pacDirect = STILL; // If the direction pacman wants to travel in is a wall and the direction he is currently travelling is a wall, stop his movement
             }
         }
 
-    if(!pac->isAtCenter() && pac->nexDirect != STILL && pac->start && !pac->isWall(pac->nexDirect)){ // Check to not cause pacman to jump at the very beginning of the game
+    if(!pac->isAtCenter() && pac->nexDirect != STILL && pac->start && !isWall(pac->nexDirect,X_cord,Y_cord)){ // Check to not cause pacman to jump at the very beginning of the game
             pac->pacDirect = pac->nexDirect;
             pac->start = false;
         }
@@ -148,25 +149,25 @@ void* Pacmove(void* pac_void)
     // pthread_mutex_lock(&lock);
     switch (pac->pacDirect) {
         case LEFT:
-            pac->X_cord -= 0.1f;
-            pac->Y_cord = round(pac->Y_cord);
+            X_cord -= 0.1f;
+            Y_cord = round(Y_cord);
             break;
         case UPWARD:
-            pac->Y_cord += 0.1f;
-            pac->X_cord = round(pac->X_cord);
+            Y_cord += 0.1f;
+            X_cord = round(X_cord);
             break;
         case RIGHT:
-            pac->X_cord += 0.1f;
-            pac->Y_cord = round(pac->Y_cord);
+            X_cord += 0.1f;
+            Y_cord = round(Y_cord);
             break;
         case DOWNWARD:
-            pac->Y_cord -= 0.1f;
-            pac->X_cord = round(pac->X_cord);
+            Y_cord -= 0.1f;
+            X_cord = round(X_cord);
             break;
         default:
                 if(!pac->start) { // Do not round pacman if it is the very start as he begin between two tiles
-                    pac->X_cord = round(pac->X_cord);
-                    pac->Y_cord = round(pac->Y_cord);
+                    X_cord = round(X_cord);
+                    Y_cord = round(Y_cord);
                 }
     }
     

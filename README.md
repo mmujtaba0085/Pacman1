@@ -1,5 +1,4 @@
 # Pacman
-jdjdjdj0
 
 git status
 
