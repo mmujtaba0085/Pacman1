@@ -94,7 +94,7 @@ public:
     }
     
     
-     bool isAtCenter()
+    bool isAtCenter()
     {
         return (int)(Y_cord * 10.0f) % 10 == 0 && (int)(Y_cord * 10.0f) % 10 == 0;
     }

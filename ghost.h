@@ -40,70 +40,107 @@ public:
 };
 float magnitude(float x,float y)
 {
-    return (x*x)+(y*y);
+    return sqrt((x-X_cord)*(x-X_cord)+(y-Y_cord)*(y-Y_cord));
 }
 
-direc movGhost(float x,float y,direc& prevGhostMov)
+int possible_exit(float x,float y)
+{
+    int count=0;
+    if(!isWall(LEFT,x,y))
+    {
+        count++;
+    }
+    if(!isWall(RIGHT,x,y))
+    {
+        count++;
+    }
+    if(!isWall(UPWARD,x,y))
+    {
+        count++;
+    }
+    if(!isWall(DOWNWARD,x,y))
+    {
+        count++;
+    }
+    return count;
+    
+}
+
+direc movGhost(float x,float y,direc& prevGhostMov,bool change_dir)
 {
     float pacMag=magnitude(X_cord,Y_cord);
-    float dis=pacMag - magnitude(x,y);
+    float dis=2000;
     direc mov = STILL;
+    int count=0;
 
-    if(!isWall(LEFT,x,y) && abs(x-X_cord - 1) < abs(x-X_cord) )
+
+    
+
+
+    if(possible_exit(x,y)>2)
     {
+        std::cout<<"aaa"<<std::endl;
+    if(!isWall(LEFT,x,y) && prevGhostMov!=RIGHT )
+    {
+        if(dis > magnitude((x)-1,y))
+        {
+        dis = magnitude(x-1,y);
         mov = LEFT;
-        dis = (pacMag - magnitude(x-1,y));
+        }
     }
-    if(!isWall(RIGHT,x,y) && abs(x-X_cord + 1) < abs(x-X_cord) )
+    if(!isWall(UPWARD,x,y) && prevGhostMov!=DOWNWARD)
     {
-        mov = RIGHT;
-        dis = (pacMag - magnitude(x+1,y));
-    }
-    if(!isWall(UPWARD,x,y) && abs(y-Y_cord+1)<abs(y-Y_cord))
-    {
+        if(dis > magnitude(x,y+1))
+        {
+        dis = magnitude(x,y+1);
         mov = UPWARD;
-        dis = abs(pacMag - magnitude(x,y+1));
+        }
     }
-    if(!isWall(DOWNWARD,x,y) && abs(y-Y_cord-1)<abs(y-Y_cord))
+    if(!isWall(RIGHT,x,y) &&  prevGhostMov!=LEFT)
     {
-        mov = DOWNWARD;
-        dis = (pacMag - magnitude(x,y-1));
+        if(dis > magnitude(x+1,y))
+        {
+        dis = magnitude(x+1,y);
+        mov = RIGHT;
+        }
     }
-    if(mov==STILL && isWall(prevGhostMov,x,y))
+    if(!isWall(DOWNWARD,x,y) && prevGhostMov!=UPWARD)
     {
-        std::cout<<"aa"<<std::endl;
-        if(prevGhostMov==LEFT)
+        if(dis > magnitude(x,y-1))
         {
-            mov=UPWARD;
+        dis = magnitude(x,y-1);
+        mov= DOWNWARD;
         }
-        else if(prevGhostMov==UPWARD)
-        {
-            mov=DOWNWARD;
-        }
-        else if(prevGhostMov==DOWNWARD)
-        {
-            mov=RIGHT;
-        }
-        else if(prevGhostMov==RIGHT)
-        {
-            mov=LEFT;
-        }
-        
     }
-    prevGhostMov=mov;
+    if(mov!=STILL)
+    {
+        return mov;
+    }
+    }
+             if (isWall(prevGhostMov,x,y)) { // Checks whether if it were to keep moving in it current direction if it would hit a wall
+                if (!isWall(LEFT,x,y) &&  prevGhostMov != RIGHT) { // Checks its new direction wouldnt make it hit a wall AND that its not reversing direction
+                    mov = LEFT;
+                } else if (!isWall(UPWARD,x,y) && prevGhostMov != DOWNWARD) {
+                    mov = UPWARD;
+                } else if (!isWall(RIGHT,x,y) && prevGhostMov != LEFT) {
+                    mov = RIGHT;
+                } else {
+                    mov = DOWNWARD;
+                }
+             }
     return mov;
     
 }
 void* Redmov(void* ghost_void)
 {
     Ghost*  ghost = static_cast<Ghost*>(ghost_void);
-
+    bool change_dir=true;
     
 
     while(1)
     {
-        direc mov=movGhost(ghost->redX,ghost->redY,ghost->redmov);
-
+        direc mov=movGhost(ghost->redX,ghost->redY,ghost->redmov,change_dir);
+        ghost->redmov=mov;
         switch (mov)
         {
         case LEFT:
@@ -122,8 +159,13 @@ void* Redmov(void* ghost_void)
             ghost->redX=round(ghost->redX);
             ghost->redY-=0.1f;
         break;
-        }
+        default:
         std::cout<<X_cord<<" "<<Y_cord<<" "<<ghost->redX<<" "<<ghost->redY<<" "<<magnitude(ghost->redX,ghost->redY)<<std::endl;
+            ghost->redX=round(ghost->redX);
+            ghost->redY = round(ghost->redY);
+        break;
+        }
+        
         usleep(15000);
 
     }
