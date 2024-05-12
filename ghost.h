@@ -20,6 +20,7 @@ public:
         redY=y;
         move_type=Box;
         speed=5.0f;
+        redmov=RIGHT;
     }
     friend void* mov(void* ghost); // Declare Pacmove as a friend function
     void draw()
@@ -77,47 +78,51 @@ direc movGhost(float x,float y,direc& prevGhostMov,bool change_dir)
     
 
 
-    if(possible_exit(x,y)>2)
+    if(possible_exit(x,y)>2 && change_dir)
     {
-        std::cout<<"aaa"<<std::endl;
+       
     if(!isWall(LEFT,x,y) && prevGhostMov!=RIGHT )
     {
-        if(dis > magnitude((x)-1,y))
+        if(dis - 0.3f> magnitude((x)-1,y))
         {
+           // std::cout<<"left"<<std::endl;
         dis = magnitude(x-1,y);
         mov = LEFT;
         }
     }
     if(!isWall(UPWARD,x,y) && prevGhostMov!=DOWNWARD)
     {
-        if(dis > magnitude(x,y+1))
+        if(dis - 0.3f> magnitude(x,y+1))
         {
+             //std::cout<<"up"<<std::endl;
         dis = magnitude(x,y+1);
         mov = UPWARD;
         }
     }
     if(!isWall(RIGHT,x,y) &&  prevGhostMov!=LEFT)
     {
-        if(dis > magnitude(x+1,y))
+        if(dis - 0.3f> magnitude(x+1,y))
         {
+             //std::cout<<"right"<<std::endl;
         dis = magnitude(x+1,y);
         mov = RIGHT;
         }
     }
     if(!isWall(DOWNWARD,x,y) && prevGhostMov!=UPWARD)
     {
-        if(dis > magnitude(x,y-1))
+        if(dis - 0.3f > magnitude(x,y-1))
         {
+             //std::cout<<"down"<<std::endl;
         dis = magnitude(x,y-1);
         mov= DOWNWARD;
         }
     }
-    if(mov!=STILL)
-    {
-        return mov;
+    std::cout<<mov<<" "<<dis<<std::endl;
+    return mov;
     }
-    }
-             if (isWall(prevGhostMov,x,y)) { // Checks whether if it were to keep moving in it current direction if it would hit a wall
+    else{
+            std::cout<<"here"<<std::endl;
+            //  if (isWall(prevGhostMov,x,y)) { // Checks whether if it were to keep moving in it current direction if it would hit a wall
                 if (!isWall(LEFT,x,y) &&  prevGhostMov != RIGHT) { // Checks its new direction wouldnt make it hit a wall AND that its not reversing direction
                     mov = LEFT;
                 } else if (!isWall(UPWARD,x,y) && prevGhostMov != DOWNWARD) {
@@ -127,7 +132,17 @@ direc movGhost(float x,float y,direc& prevGhostMov,bool change_dir)
                 } else {
                     mov = DOWNWARD;
                 }
-             }
+                change_dir=false;
+        }
+        if(mov==STILL && isWall(prevGhostMov,x,y))
+        {
+            change_dir=true;
+            mov=movGhost(x,y,prevGhostMov,change_dir);
+        }
+        else if(!isWall(prevGhostMov,x,y))
+        {
+            return prevGhostMov;
+        }
     return mov;
     
 }
