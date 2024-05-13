@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <vector>
 #include <fstream>
+#include<chrono>
 
 pthread_mutex_t lock;
 //headers
@@ -18,7 +19,7 @@ pthread_mutex_t lock;
 #include "ghost.h"
 
 Pac pac;
-Ghost redGhost(6.0f,16.0f);
+Ghost redGhost(initalRed_X,initailRed_Y);
 pthread_t pacThread;
 pthread_t RGhostThread;
 

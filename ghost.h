@@ -4,6 +4,9 @@
 
 typedef enum{Follow,Run,Box}motion;
 
+float initalRed_X=6.0f;
+float initailRed_Y=16.0f;
+
 class Ghost
 {
 public:
@@ -67,12 +70,24 @@ int possible_exit(float x,float y)
     
 }
 
+void WhoDied(float &x, float &y)
+{
+    if(round(x)==round(X_cord) && round(y)==round(Y_cord) && !dead)
+    {
+        lives--;
+        dead=true;
+        x=initalRed_X;
+        y=initailRed_Y;
+    }
+}
+
 direc movGhost(float &x,float &y,direc& prevGhostMov,bool change_dir)
 {
     float pacMag=magnitude(X_cord,Y_cord);
     float dis=2000;
     direc mov = STILL;
     int count=0;
+
 
     if(getTile(x,y)==T)
     {
@@ -93,47 +108,42 @@ direc movGhost(float &x,float &y,direc& prevGhostMov,bool change_dir)
        
     if(!isWall(LEFT,x,y) && prevGhostMov!=RIGHT )
     {
-        if(dis - 0.3f> magnitude((x)-1,y))
+        if(dis > magnitude((x)-1,y))
         {
-            std::cout<<"left"<<std::endl;
         dis = magnitude(x-1,y);
         mov = LEFT;
         }
     }
     if(!isWall(UPWARD,x,y) && prevGhostMov!=DOWNWARD)
     {
-        if(dis - 0.3f> magnitude(x,y+1))
+        if(dis > magnitude(x,y+1))
         {
-             std::cout<<"up"<<std::endl;
         dis = magnitude(x,y+1);
         mov = UPWARD;
         }
     }
     if(!isWall(RIGHT,x,y) &&  prevGhostMov!=LEFT)
     {
-        if(dis - 0.3f> magnitude(x+1,y))
+        if(dis> magnitude(x+1,y))
         {
-             std::cout<<"right"<<std::endl;
         dis = magnitude(x+1,y);
         mov = RIGHT;
         }
     }
     if(!isWall(DOWNWARD,x,y) && prevGhostMov!=UPWARD)
     {
-        if(dis - 0.3f > magnitude(x,y-1))
+        if(dis  > magnitude(x,y-1))
         {
-             std::cout<<"down"<<std::endl;
         dis = magnitude(x,y-1);
         mov= DOWNWARD;
         }
     }
-    std::cout<<mov<<" "<<dis<<std::endl;
     return mov;
     }
     else{
-            std::cout<<"here"<<std::endl;
-            //  if (isWall(prevGhostMov,x,y)) { // Checks whether if it were to keep moving in it current direction if it would hit a wall
-                if (!isWall(LEFT,x,y) &&  prevGhostMov != RIGHT) { // Checks its new direction wouldnt make it hit a wall AND that its not reversing direction
+           
+            
+                if (!isWall(LEFT,x,y) &&  prevGhostMov != RIGHT) { 
                     mov = LEFT;
                 } else if (!isWall(UPWARD,x,y) && prevGhostMov != DOWNWARD) {
                     mov = UPWARD;
@@ -160,13 +170,28 @@ void* Redmov(void* ghost_void)
 {
     Ghost*  ghost = static_cast<Ghost*>(ghost_void);
     bool change_dir=true;
-    
-
+    auto startTime = std::chrono::steady_clock::now();
+    auto endTime = std::chrono::steady_clock::now();
+    std::chrono::duration<double> elapsedSeconds;
     while(1)
     {
-        direc mov=movGhost(ghost->redX,ghost->redY,ghost->redmov,change_dir);
-        ghost->redmov=mov;
-        switch (mov)
+        endTime = std::chrono::steady_clock::now();
+        elapsedSeconds = endTime - startTime;
+
+        WhoDied(ghost->redX,ghost->redY);
+
+        if (elapsedSeconds.count() >= 0.5 || isWall(ghost->redmov,ghost->redX,ghost->redY) || getTile(ghost->redX,ghost->redY)==T ) {
+            // Run timed function
+            direc mov=movGhost(ghost->redX,ghost->redY,ghost->redmov,change_dir);
+            ghost->redmov=mov;
+            // Reset start time
+            startTime = std::chrono::steady_clock::now();
+        }
+
+
+      
+       
+        switch (ghost->redmov)
         {
         case LEFT:
             ghost->redX -= 0.1f;

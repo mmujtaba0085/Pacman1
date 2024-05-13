@@ -5,7 +5,8 @@ typedef enum{UPWARD, DOWNWARD, LEFT, RIGHT,STILL} direc;
 
 float X_cord;
 float Y_cord;
-
+float lives=3;
+bool dead=false;
 class Pac
 {
 public:
@@ -100,12 +101,24 @@ public:
     }
     void Finish()
     {
-        RecreateMaze();
+       // RecreateMaze();
         X_cord = 13.5f;
         Y_cord =  7.0f;
         pacDirect = STILL;
         nexDirect = STILL;
         start=true;
+        dead =false;
+    }
+
+    void Restart()
+    {
+        X_cord = 13.5f;
+        Y_cord =  7.0f;
+        RecreateMaze();
+        pacDirect = STILL;
+        nexDirect = STILL;
+        start=true;
+        dead =false;
     }
 };
 
@@ -133,6 +146,14 @@ void* Pacmove(void* pac_void)
     Pac* pac = static_cast<Pac*>(pac_void);
     while(1)
     {
+        if(lives==0)
+        {
+            break;
+        }
+        else if(dead)
+        {
+            pac->Finish();
+        }
         if(pac->isAtCenter()) {
     if (!(isWall(pac->nexDirect,X_cord,Y_cord))) { // If the direction pacman wants to go in is not a wall, set that direction
                 {pac->pacDirect = pac->nexDirect;}
