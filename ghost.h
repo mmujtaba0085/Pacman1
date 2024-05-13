@@ -26,14 +26,14 @@ public:
     void draw()
     {   
         glPushMatrix();
-        unsigned int pac_tex;    
-        pac_tex = pac_1_tex;
+        unsigned int redGhst_tex;    
+        redGhst_tex = ghost_r_0_tex;
         translateBottomLeft(); // Translate to bottom left of screen which is (0,0)
         translateToMazeCoords(redX, redY);
 
         glTranslatef(-3.0f, -3.0f, 0.0f); // Translate to take into account pacmans size
 
-        drawTex(pac_tex, 14, 14, 0);
+        drawTex(redGhst_tex, 14, 14, 0);
 
         glPopMatrix();
     }
@@ -67,14 +67,24 @@ int possible_exit(float x,float y)
     
 }
 
-direc movGhost(float x,float y,direc& prevGhostMov,bool change_dir)
+direc movGhost(float &x,float &y,direc& prevGhostMov,bool change_dir)
 {
     float pacMag=magnitude(X_cord,Y_cord);
     float dis=2000;
     direc mov = STILL;
     int count=0;
 
-
+    if(getTile(x,y)==T)
+    {
+        if(prevGhostMov==LEFT)
+        {
+            x=26;
+        }
+        else if(prevGhostMov=RIGHT)
+        {
+            x=2;
+        }
+    }
     
 
 
@@ -85,7 +95,7 @@ direc movGhost(float x,float y,direc& prevGhostMov,bool change_dir)
     {
         if(dis - 0.3f> magnitude((x)-1,y))
         {
-           // std::cout<<"left"<<std::endl;
+            std::cout<<"left"<<std::endl;
         dis = magnitude(x-1,y);
         mov = LEFT;
         }
@@ -94,7 +104,7 @@ direc movGhost(float x,float y,direc& prevGhostMov,bool change_dir)
     {
         if(dis - 0.3f> magnitude(x,y+1))
         {
-             //std::cout<<"up"<<std::endl;
+             std::cout<<"up"<<std::endl;
         dis = magnitude(x,y+1);
         mov = UPWARD;
         }
@@ -103,7 +113,7 @@ direc movGhost(float x,float y,direc& prevGhostMov,bool change_dir)
     {
         if(dis - 0.3f> magnitude(x+1,y))
         {
-             //std::cout<<"right"<<std::endl;
+             std::cout<<"right"<<std::endl;
         dis = magnitude(x+1,y);
         mov = RIGHT;
         }
@@ -112,7 +122,7 @@ direc movGhost(float x,float y,direc& prevGhostMov,bool change_dir)
     {
         if(dis - 0.3f > magnitude(x,y-1))
         {
-             //std::cout<<"down"<<std::endl;
+             std::cout<<"down"<<std::endl;
         dis = magnitude(x,y-1);
         mov= DOWNWARD;
         }
