@@ -8,6 +8,9 @@ float Y_cord;
 float lives=3;
 bool dead=false;
 bool bigBall=false;
+auto bigBallEffect_start = std::chrono::steady_clock::now();
+auto bigBallEffect_end = std::chrono::steady_clock::now();
+
 class Pac
 {
 public:
@@ -40,16 +43,25 @@ public:
 
         glPushMatrix();
         tile temp=getTile(X_cord,Y_cord);
+        bigBallEffect_end = std::chrono::steady_clock::now();
+        std::chrono::duration<double> elapsedSeconds=bigBallEffect_end-bigBallEffect_start;
+        if(elapsedSeconds.count() > 5 )
+        {   
+            
+            bigBall=false;
+        }
         if(temp==o)
         {
             score+=10;
             total_dots--;
             maze[(int) floor(X_cord)][(int) floor(Y_cord)]=s;
         }
-        else if(temp==O)
+        else if(temp==O && !bigBall)
         {
             score+=50;
             maze[(int) floor(X_cord)][(int) floor(Y_cord)]=S;
+            bigBall=true;
+            bigBallEffect_start = std::chrono::steady_clock::now();
             total_dots--;
         }
         else if(temp==F)

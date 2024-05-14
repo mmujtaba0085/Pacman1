@@ -18,7 +18,7 @@ float yy[4]{29.0f,1.0f,1.0f,29.0f};
 
 bool GisWall(direc dir,float x, float y)
     {
-        if (getFollowingTile(dir,x,y) == W ) {
+        if (getFollowingTile(dir,x,y) == W || (getFollowingTile(dir,x,y) == G && dir==DOWNWARD) ) {
             return true;
         }
 
@@ -37,18 +37,23 @@ public:
     float speed;
     color ghost_col;
     int total_scatter=3;
+    int died;
     Ghost(float x, float y, color col)
     {
         move_type=Box;
-        speed=5.0f;
+        speed=0.1f;
         redmov=RIGHT;
         originX=x;
         originY=y;
         X=x;
         Y=y;
         ghost_col=col;
+        died=false;
     }
+
     friend void* mov(void* ghost); // Declare Pacmove as a friend function
+
+
     void draw()
     {   
         glPushMatrix();
@@ -58,13 +63,21 @@ public:
         translateToMazeCoords(X, Y);
 
         glTranslatef(-3.0f, -3.0f, 0.0f); // Translate to take into account pacmans size
-        if(ghost_col==RED)
+        if(!bigBall)
         {
-            Ghst_tex = ghost_r_0_tex;
+            if(ghost_col==RED)
+            {
+                Ghst_tex = ghost_r_0_tex;
+            }
+            else if(ghost_col==BLUE)
+            {
+                Ghst_tex = ghost_b_0_tex;
+            }
         }
-        else if(ghost_col==BLUE)
+        else
         {
-            Ghst_tex = ghost_b_0_tex;
+            Ghst_tex=ghost_scared_0_tex;
+            
         }
         drawTex(Ghst_tex, 14, 14, 0);
         glPopMatrix();
@@ -119,12 +132,16 @@ int possible_exit(float x,float y)
 
 
 
-void WhoDied(float &x, float &y)
+void WhoDied(float &x, float &y,Ghost* ghost)
 {
-    if(round(x)==round(X_cord) && round(y)==round(Y_cord) && !dead)
+    if(round(x)==round(X_cord) && round(y)==round(Y_cord) && !dead && !bigBall)
     {//if pac dies
         lives--;
         dead=true;
+    }
+    else if(round(x)==round(X_cord) && round(y)==round(Y_cord) && bigBall)
+    {
+        ghost->died=true;
     }
 }
 
@@ -148,8 +165,18 @@ direc movGhost(float &x,float &y,direc& prevGhostMov,bool change_dir,color col ,
                 x=2;
             }
         }
-   
-
+    if(ghost->move_type==Box)
+    {
+        x2=13.5f;
+        y2=19.0f;
+        std::cout<<"box"<<std::endl;
+    
+    }
+    if(ghost->move_type==Box && round(x)==round(x2) && round(y)==round(y2))
+    {
+        ghost->move_type = Follow;
+    }
+    
     if(ghost->move_type==Follow)
     {
         if(col==RED)   
@@ -193,10 +220,10 @@ direc movGhost(float &x,float &y,direc& prevGhostMov,bool change_dir,color col ,
         }
         dis = 0;
     }
-    if(possible_exit(x,y)>2 && change_dir)
+    if((possible_exit(x,y)>2 && change_dir) || ghost->move_type==Box)
     {
     
-    if(!GisWall(LEFT,x,y) && prevGhostMov!=RIGHT )
+    if((!GisWall(LEFT,x,y) && prevGhostMov!=RIGHT) || ghost->move_type==Box )
     {
         if((dis > disINBtwPnG((x)-1,y,x2,y2) && ghost->move_type!=RunAway) || (dis < disINBtwPnG((x)-1,y,x2,y2) && ghost->move_type==RunAway) )
         {
@@ -204,7 +231,7 @@ direc movGhost(float &x,float &y,direc& prevGhostMov,bool change_dir,color col ,
         mov = LEFT;
         }
     }
-    if(!GisWall(UPWARD,x,y) && prevGhostMov!=DOWNWARD)
+    if((!GisWall(UPWARD,x,y) && prevGhostMov!=DOWNWARD) || ghost->move_type==Box)
     {
         if((dis > disINBtwPnG(x,y+1,x2,y2)&& ghost->move_type!=RunAway) || (dis < disINBtwPnG(x,y+1,x2,y2)&& ghost->move_type==RunAway))
         {
@@ -212,7 +239,7 @@ direc movGhost(float &x,float &y,direc& prevGhostMov,bool change_dir,color col ,
         mov = UPWARD;
         }
     }
-    if(!GisWall(RIGHT,x,y) &&  prevGhostMov!=LEFT)
+    if((!GisWall(RIGHT,x,y) &&  prevGhostMov!=LEFT) || ghost->move_type==Box)
     {
         if((dis > disINBtwPnG(x+1,y,x2,y2)&& ghost->move_type!=RunAway) || (dis < disINBtwPnG(x+1,y,x2,y2)&& ghost->move_type==RunAway))
         {
@@ -220,7 +247,7 @@ direc movGhost(float &x,float &y,direc& prevGhostMov,bool change_dir,color col ,
         mov = RIGHT;
         }
     }
-    if(!GisWall(DOWNWARD,x,y) && prevGhostMov!=UPWARD)
+    if((!GisWall(DOWNWARD,x,y) && prevGhostMov!=UPWARD)|| ghost->move_type==Box)
     {
         if((dis  > disINBtwPnG(x,y-1,x2,y2)&& ghost->move_type!=RunAway) || (dis  < disINBtwPnG(x,y-1,x2,y2)&& ghost->move_type==RunAway))
         {
@@ -230,19 +257,17 @@ direc movGhost(float &x,float &y,direc& prevGhostMov,bool change_dir,color col ,
     }
     return mov;
     }
-    else{
-           
-            
-                if (!GisWall(LEFT,x,y) &&  prevGhostMov != RIGHT) { 
-                    mov = LEFT;
-                } else if (!GisWall(UPWARD,x,y) && prevGhostMov != DOWNWARD) {
-                    mov = UPWARD;
-                } else if (!GisWall(RIGHT,x,y) && prevGhostMov != LEFT) {
-                    mov = RIGHT;
-                } else {
-                    mov = DOWNWARD;
-                }
-                change_dir=false;
+    else{   
+            if (!GisWall(LEFT,x,y) &&  prevGhostMov != RIGHT) { 
+                mov = LEFT;
+            } else if (!GisWall(UPWARD,x,y) && prevGhostMov != DOWNWARD) {
+                mov = UPWARD;
+            } else if (!GisWall(RIGHT,x,y) && prevGhostMov != LEFT) {
+                mov = RIGHT;
+            } else {
+                mov = DOWNWARD;
+            }
+            change_dir=false;
         }
         if(mov==STILL && GisWall(prevGhostMov,x,y))
         {
@@ -267,33 +292,70 @@ void* GnrlMov(void* ghost_void)
     auto DirStartTime = std::chrono::steady_clock::now();
     auto DirEndTime = std::chrono::steady_clock::now();
     std::chrono::duration<double> elapsedSeconds;
+    bool scareChange=true;
     while(1)
     {
-        WhoDied(ghost->X,ghost->Y);
+        WhoDied(ghost->X,ghost->Y,ghost);
         if(dead)
         {
             ghost->X=ghost->originX;
             ghost->Y=ghost->originY;
-            std::cout<<ghost->X<<" "<<ghost->Y<<std::endl;
-
+            // std::cout<<ghost->X<<" "<<ghost->Y<<std::endl;
+        }
+        else if(ghost->died)
+        {   ghost->X=11.5f;
+            ghost->Y=16.0f;
+            ghost->died=false;
         }
         
         auto currentTime = std::chrono::steady_clock::now();
         auto eTime = std::chrono::duration_cast<std::chrono::seconds>(currentTime - startTime).count();
 
-        if ((eTime % 35 <= 15) && ghost->move_type!=Scatter && ghost->total_scatter > 0) 
+        if(bigBall)
         {
+            ghost->speed=0.05;
+            if(ghost->move_type!=Box)
+            {
+                ghost->move_type = RunAway;
+            }
+            if(scareChange)
+            {
+                switch (ghost->move_type)
+                {
+                case LEFT:
+                    ghost->redmov=RIGHT;
+                    break;
+                case RIGHT:
+                    ghost->redmov=LEFT;
+                    break;
+                case UPWARD:
+                    ghost->redmov=DOWNWARD;
+                    break;
+                case DOWNWARD:
+                    ghost->redmov=UPWARD;
+                    break;
+                default:
+                    break;
+                }
+
+                scareChange=false;
+            }
+        }
+        else if ((eTime % 35 <= 15) && ghost->move_type!=Scatter && ghost->total_scatter > 0 && ghost->move_type!=Box) 
+        {
+            ghost->speed=0.1;
             ghost->move_type = Scatter;
             ghost->total_scatter--;
+            scareChange=true;
         }
-        else if((eTime % 35 > 15) && ghost->move_type!=Follow)
+        else if((eTime % 35 > 15) && ghost->move_type!=Follow && ghost->move_type!=Box)
         {
+            ghost->speed=0.1;
             ghost->move_type = Follow;
+            scareChange=true;
         }
-        // else if(bigBall)
-        // {
-
-        // }
+        
+        
         DirEndTime = std::chrono::steady_clock::now();
         elapsedSeconds = DirEndTime - DirStartTime;
 
@@ -312,23 +374,23 @@ void* GnrlMov(void* ghost_void)
         switch (ghost->redmov)
         {
         case LEFT:
-            ghost->X -= 0.1f;
+            ghost->X -= ghost->speed;
             ghost->Y = round(ghost->Y);
         break;
         case RIGHT:
-            ghost->X += 0.1f;
+            ghost->X += ghost->speed;
             ghost->Y = round(ghost->Y);
         break;    
         case UPWARD:
             ghost->X=round(ghost->X);
-            ghost->Y+=0.1f;
+            ghost->Y+=ghost->speed;
         break;
         case DOWNWARD:
             ghost->X=round(ghost->X);
-            ghost->Y-=0.1f;
+            ghost->Y-=ghost->speed;
         break;
         default:
-        std::cout<<X_cord<<" "<<Y_cord<<" "<<ghost->X<<" "<<ghost->Y<<std::endl;
+        //std::cout<<X_cord<<" "<<Y_cord<<" "<<ghost->X<<" "<<ghost->Y<<std::endl;
             ghost->X=round(ghost->X);
             ghost->Y = round(ghost->Y);
         break;
