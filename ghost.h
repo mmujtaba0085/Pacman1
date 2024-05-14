@@ -2,7 +2,7 @@
 #define GHOST_H
 
 
-typedef enum{Follow,Run,Box,Dead}motion;
+typedef enum{Follow,RunAway,Scatter,Box,Dead}motion;
 typedef enum{RED,BLUE}color;
 
 
@@ -10,6 +10,8 @@ float initalRed_X=13.5f;
 float initailRed_Y=19.0f;
 float initalBlue_X=11.5f;
 float initailBlue_Y=16.0f;
+
+motion AllGhostMov=Box;
 
 float xx[4]{1.0f,26.0f,1.0f,26.0f};
 float yy[4]{29.0f,1.0f,1.0f,29.0f};
@@ -34,7 +36,7 @@ public:
     direc redmov;
     float speed;
     color ghost_col;
-
+    int total_scatter=3;
     Ghost(float x, float y, color col)
     {
         move_type=Box;
@@ -125,35 +127,55 @@ void WhoDied(float &x, float &y)
     }
 }
 
-direc movGhost(float &x,float &y,direc& prevGhostMov,bool change_dir,color col )
+direc movGhost(float &x,float &y,direc& prevGhostMov,bool change_dir,color col ,Ghost*  ghost)
 {
     float dis=2000;
     direc mov = STILL;
     int count=0;
     float x2,y2;
 
-    if(getTile(x,y)==T)
-    {
-        if(prevGhostMov==LEFT)
-        {
-            x=26;
-        }
-        else if(prevGhostMov=RIGHT)
-        {
-            x=2;
-        }
-    }
+
     
-    if(col==RED)   
+        if(getTile(x,y)==T)
+        {
+            if(prevGhostMov==LEFT)
+            {
+                x=26;
+            }
+            else if(prevGhostMov=RIGHT)
+            {
+                x=2;
+            }
+        }
+   
+
+    if(ghost->move_type==Follow)
     {
-        x2=X_cord;
-        y2=Y_cord;
+        if(col==RED)   
+        {
+            x2=X_cord;
+            y2=Y_cord;
+        }
+        else if(col==BLUE)
+        {
+            int temp=nearestPosToPac();
+            x2=xx[temp];
+            y2=yy[temp];
+        }
     }
-    else if(col==BLUE)
+    else if(ghost->move_type==Scatter)
     {
-        int temp=nearestPosToPac();
-        x2=xx[temp];
-        y2=yy[temp];
+        if(col==BLUE)   
+        {
+            x2=xx[3];
+            y2=yy[3];
+        }
+        else if(col==RED)
+        {
+
+            x2=xx[1];
+            y2=yy[1];
+        }
     }
     if(possible_exit(x,y)>2 && change_dir)
     {
@@ -209,7 +231,7 @@ direc movGhost(float &x,float &y,direc& prevGhostMov,bool change_dir,color col )
         if(mov==STILL && GisWall(prevGhostMov,x,y))
         {
             change_dir=true;
-            return movGhost(x,y,prevGhostMov,change_dir,col);
+            return movGhost(x,y,prevGhostMov,change_dir,col,ghost);
         }
         if(!GisWall(prevGhostMov,x,y))
         {
@@ -226,8 +248,8 @@ void* GnrlMov(void* ghost_void)
     sleep(3);
     Ghost*  ghost = static_cast<Ghost*>(ghost_void);
     bool change_dir=true;
-    auto startTime = std::chrono::steady_clock::now();
-    auto endTime = std::chrono::steady_clock::now();
+    auto DirStartTime = std::chrono::steady_clock::now();
+    auto DirEndTime = std::chrono::steady_clock::now();
     std::chrono::duration<double> elapsedSeconds;
     while(1)
     {
@@ -239,17 +261,32 @@ void* GnrlMov(void* ghost_void)
             std::cout<<ghost->X<<" "<<ghost->Y<<std::endl;
 
         }
-        endTime = std::chrono::steady_clock::now();
-        elapsedSeconds = endTime - startTime;
+        
+        auto currentTime = std::chrono::steady_clock::now();
+        auto eTime = std::chrono::duration_cast<std::chrono::seconds>(currentTime - startTime).count();
+
+        if ((eTime % 35 <= 15) && ghost->move_type!=Scatter && ghost->total_scatter > 0) 
+        {
+            ghost->move_type = Scatter;
+            ghost->total_scatter--;
+            std::cout<<"here"<<std::endl;
+        }
+        else if((eTime % 35 > 15) && ghost->move_type!=Follow)
+        {
+            ghost->move_type = Follow;
+        }
+
+        DirEndTime = std::chrono::steady_clock::now();
+        elapsedSeconds = DirEndTime - DirStartTime;
 
        
 
         if (elapsedSeconds.count() >= 0.5 || GisWall(ghost->redmov,ghost->X,ghost->Y) || getTile(ghost->X,ghost->Y)==T ) {
             // Run timed function
-            direc mov=movGhost(ghost->X,ghost->Y,ghost->redmov,change_dir,ghost->ghost_col);
+            direc mov=movGhost(ghost->X,ghost->Y,ghost->redmov,change_dir,ghost->ghost_col,ghost);
             ghost->redmov=mov;
             // Reset start time
-            startTime = std::chrono::steady_clock::now();
+            DirStartTime = std::chrono::steady_clock::now();
         }
         
       

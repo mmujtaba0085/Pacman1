@@ -11,12 +11,17 @@
 #include <fstream>
 #include<chrono>
 
+
+auto startTime = std::chrono::steady_clock::now();
+
 pthread_mutex_t lock;
 //headers
 #include "Texture.h"
 #include "maze.h"
 #include "pac.h"
 #include "ghost.h"
+
+
 
 Pac pac;
 Ghost red(initalRed_X,initailRed_Y,RED);
