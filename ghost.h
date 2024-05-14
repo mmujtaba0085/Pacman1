@@ -3,14 +3,17 @@
 
 
 typedef enum{Follow,RunAway,Scatter,Box,Dead}motion;
-typedef enum{RED,BLUE}color;
+typedef enum{RED,BLUE,PINK,YELLOW}color;
 
 
 float initalRed_X=13.5f;
 float initailRed_Y=19.0f;
 float initalBlue_X=11.5f;
 float initailBlue_Y=16.0f;
-
+float initialPink_X=15.5f;
+float initialPink_Y=16.0;
+float initialYellow_X=13.5f;
+float initialYellow_Y=16.0;
 motion AllGhostMov=Box;
 
 float xx[4]{1.0f,26.0f,1.0f,26.0f};
@@ -65,13 +68,21 @@ public:
         glTranslatef(-3.0f, -3.0f, 0.0f); // Translate to take into account pacmans size
         if(!bigBall)
         {
-            if(ghost_col==RED)
+            if(ghost_col==RED ) 
             {
                 Ghst_tex = ghost_r_0_tex;
             }
-            else if(ghost_col==BLUE)
+            else if(ghost_col==YELLOW)
             {
                 Ghst_tex = ghost_b_0_tex;
+            }
+            else if(ghost_col==BLUE )
+            {
+                Ghst_tex = ghost_b_0_tex;
+            }
+            else if(ghost_col==PINK)
+            {
+                Ghst_tex = ghost_p_0_tex;
             }
         }
         else
@@ -179,12 +190,12 @@ direc movGhost(float &x,float &y,direc& prevGhostMov,bool change_dir,color col ,
     
     if(ghost->move_type==Follow)
     {
-        if(col==RED)   
+        if(col==RED || col==YELLOW)   
         {
             x2=X_cord;
             y2=Y_cord;
         }
-        else if(col==BLUE)
+        else if(col==BLUE || col==PINK)
         {
             int temp=PosToPac();
             x2=xx[temp];
@@ -198,21 +209,31 @@ direc movGhost(float &x,float &y,direc& prevGhostMov,bool change_dir,color col ,
             x2=xx[3];
             y2=yy[3];
         }
+        else if(col==PINK)
+        {
+            x2=xx[2];
+            y2=yy[2];
+        }
         else if(col==RED)
         {
 
             x2=xx[1];
             y2=yy[1];
         }
+        else if(col==YELLOW)
+        {
+            x2=xx[0];
+            y2=yy[0];
+        }
     }
     else if(ghost->move_type==RunAway)
     {
-        if(col==RED)   
+        if(col==RED || col==YELLOW)   
         {
             x2=X_cord;
             y2=Y_cord;
         }
-        else if(col==BLUE)
+        else if(col==BLUE || col==PINK)
         {
             int temp=PosToPac();
             x2=xx[temp];

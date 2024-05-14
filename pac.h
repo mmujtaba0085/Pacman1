@@ -156,7 +156,7 @@ public:
     }
 
 void* Pacmove(void* pac_void)
-{
+{   sleep(3);
     Pac* pac = static_cast<Pac*>(pac_void);
     while(1)
     {
