@@ -19,16 +19,19 @@ pthread_mutex_t lock;
 #include "ghost.h"
 
 Pac pac;
-Ghost redGhost(initalRed_X,initailRed_Y);
+Ghost red(initalRed_X,initailRed_Y,RED);
+Ghost blue(initalBlue_X,initailBlue_Y,BLUE);
 pthread_t pacThread;
 pthread_t RGhostThread;
+pthread_t BGhostThread;
 
 void display() {
 //pthread_mutex_lock(&lock);
 glClear(GL_COLOR_BUFFER_BIT);
 drawMaze();
 pac.draw();
-redGhost.draw();
+red.draw();
+blue.draw();
 glutSwapBuffers();
 glutPostRedisplay();
 //pthread_mutex_unlock(&lock);
@@ -77,7 +80,8 @@ int main(int argc, char** argv) {
 
     initOpenGL();
     pthread_create(&pacThread,NULL,Pacmove,(void *)&pac);
-    pthread_create(&RGhostThread,NULL,Redmov,(void*)&redGhost);
+    pthread_create(&RGhostThread,NULL,GnrlMov,(void*)&red);
+    pthread_create(&BGhostThread,NULL,GnrlMov,(void*)&blue);
     glutMainLoop();
 return 0;
 }

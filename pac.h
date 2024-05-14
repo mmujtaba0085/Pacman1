@@ -106,6 +106,7 @@ public:
         Y_cord =  7.0f;
         pacDirect = STILL;
         nexDirect = STILL;
+        sleep(3);
         start=true;
         dead =false;
     }
@@ -166,7 +167,7 @@ void* Pacmove(void* pac_void)
             pac->pacDirect = pac->nexDirect;
             pac->start = false;
         }
-
+    
     // pthread_mutex_lock(&lock);
     switch (pac->pacDirect) {
         case LEFT:
@@ -191,7 +192,6 @@ void* Pacmove(void* pac_void)
                     Y_cord = round(Y_cord);
                 }
     }
-    
     // pthread_mutex_unlock(&lock);
     usleep(10000);
     }
