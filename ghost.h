@@ -2,7 +2,7 @@
 #define GHOST_H
 
 
-typedef enum{Follow,RunAway,Scatter,Box,Dead}motion;
+typedef enum{Follow,RunAway,Scatter,Box}motion;
 typedef enum{RED,BLUE,PINK,YELLOW}color;
 
 pthread_mutex_t key;
@@ -17,7 +17,6 @@ float initialYellow_X=13.5f;
 float initialYellow_Y=15.3;
 motion AllGhostMov=Box;
 bool isGateOpen = true; // Flag to indicate if the gate is open
-
 
 float xx[4]{1.0f,26.0f,1.0f,26.0f};
 float yy[4]{29.0f,1.0f,1.0f,29.0f};
@@ -47,7 +46,7 @@ public:
     bool is_fast;
     Ghost(float x, float y, color col,float speeed)
     {
-        move_type=Box;
+        move_type=Scatter;
         speed=speeed;
         redmov=UPWARD;
         originX=x;
@@ -57,10 +56,7 @@ public:
         ghost_col=col;
         died=false;
         is_fast=false;
-        if(speed>=0.1)
-        {
-            is_fast=true;
-        }
+        
     }
 
     friend void* mov(void* ghost); // Declare Pacmove as a friend function
@@ -185,16 +181,16 @@ direc movGhost(float &x,float &y,direc& prevGhostMov,bool change_dir,color col ,
                 x=2;
             }
         }
-    if(ghost->move_type==Box)
-    {
-        x2=13.5f;
-        y2=19.0f;
+    // if(ghost->move_type==Box)
+    // {
+    //     x2=13.5f;
+    //     y2=19.0f;
     
-    }
-    if(ghost->move_type==Box && round(x)==round(x2) && round(y)==round(y2))
-    {
-        ghost->move_type = Follow;
-    }
+    // }
+    // if(ghost->move_type==Box && round(x)==round(x2) && round(y)==round(y2))
+    // {
+    //     ghost->move_type = Follow;
+    // }
     
     if(ghost->move_type==Follow)
     {
@@ -325,35 +321,43 @@ void* GnrlMov(void* ghost_void)
     bool takengate=false;
     int count=0;
     while(1)
-    {
+    {   
+        if(lives<0)
+        {
+            break;
+        }
         WhoDied(ghost->X,ghost->Y,ghost);
         if(dead)
         {
             ghost->X=ghost->originX;
             ghost->Y=ghost->originY;
+            ghost->is_fast=false;
+            ghost->speed=0.1f;
+            ghost->redmov=UPWARD;
+            sleep(3);
             // std::cout<<ghost->X<<" "<<ghost->Y<<std::endl;
+        }
+        if(getTile(ghost->X,ghost->Y)==A && !ghost->is_fast)
+        {   maze[(int) floor(ghost->X)][(int) floor(ghost->Y)]=o;
+            ghost->is_fast=true;
+            ghost->speed=0.3f;
+            std::cout<<"Ghost"<<ghost->ghost_col<<" is Fast"<<std::endl;
         }
         else if(ghost->died)
         {   ghost->X=11.5f;
             ghost->Y=16.0f;
             ghost->died=false;
+            ghost->is_fast=false;
+            score+=200;
         }
         pthread_mutex_lock(&key);
         if ((getFollowingTile(ghost->redmov, ghost->X, ghost->Y) == G ) && isGateOpen) {
             isGateOpen = false; // Close the gate for other ghosts
             takengate = true;
-            std::cout<<"GateLocked"<<std::endl;
+            //std::cout<<"GateLocked"<<std::endl;
             ghost->Y+=1.0f;
         } 
         pthread_mutex_unlock(&key);
-        // else if (getFollowingTile(ghost->redmov,ghost->X, ghost->Y) == G && !isGateOpen ) {
-        //     // Wait outside the gate until another ghost opens it
-            
-        //     while (getFollowingTile(ghost->redmov,ghost->X, ghost->Y) == G && !isGateOpen) {
-        //     sleep(1); // Sleep for 10 milliseconds
-        //     }
-        //  continue;   
-        // }
         
         
         auto currentTime = std::chrono::steady_clock::now();
@@ -392,11 +396,11 @@ void* GnrlMov(void* ghost_void)
         else if ((eTime % 35 <= 15) && ghost->move_type!=Scatter && ghost->total_scatter > 0 && ghost->move_type!=Box) 
         {   if(ghost->is_fast)
             {   
-                ghost->speed=0.1;
+                ghost->speed=0.3f;
             }    
             else
             {
-                ghost->speed=0.08;
+                ghost->speed=0.1;
             }
             ghost->move_type = Scatter;
             ghost->total_scatter--;
@@ -406,11 +410,11 @@ void* GnrlMov(void* ghost_void)
         {
             if(ghost->is_fast)
             {   
-                ghost->speed=0.1;
+                ghost->speed=0.3f;
             }    
             else
             {
-                ghost->speed=0.08;
+                ghost->speed=0.1;
             }
             ghost->move_type = Follow;
             scareChange=true;
@@ -453,7 +457,7 @@ void* GnrlMov(void* ghost_void)
             ghost->Y-=ghost->speed;
         break;
         default:
-        //std::cout<<X_cord<<" "<<Y_cord<<" "<<ghost->X<<" "<<ghost->Y<<std::endl;
+        
             ghost->X=round(ghost->X);
             ghost->Y = round(ghost->Y);
         break;
@@ -463,7 +467,7 @@ void* GnrlMov(void* ghost_void)
             
             takengate=false;
             isGateOpen=true;
-            std::cout<<"GateUnlocked"<<ghost->ghost_col<<std::endl;
+            //std::cout<<"GateUnlocked"<<ghost->ghost_col<<std::endl;
         }
         usleep(15000);
 

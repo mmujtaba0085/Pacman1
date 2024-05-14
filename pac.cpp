@@ -14,6 +14,8 @@
 
 auto startTime = std::chrono::steady_clock::now();
 
+auto animation = std::chrono::steady_clock::now();
+
 pthread_mutex_t lock;
 //headers
 #include "Texture.h"
@@ -26,8 +28,8 @@ pthread_mutex_t lock;
 Pac pac;
 Ghost red(initalRed_X,initailRed_Y,RED,0.1);
 Ghost blue(initalBlue_X,initailBlue_Y,BLUE,0.1);
-Ghost pink(initialPink_X,initialPink_Y,PINK,0.08);
-Ghost yellow(initialYellow_X,initialYellow_Y,YELLOW,0.08);
+Ghost pink(initialPink_X,initialPink_Y,PINK,0.1);
+Ghost yellow(initialYellow_X,initialYellow_Y,YELLOW,0.1);
 pthread_t pacThread;
 pthread_t RGhostThread;
 pthread_t BGhostThread;
@@ -38,11 +40,22 @@ void display() {
 //pthread_mutex_lock(&lock);
 glClear(GL_COLOR_BUFFER_BIT);
 drawMaze();
+if(lives>0)
+{
 pac.draw();
 red.draw();
 blue.draw();
 yellow.draw();
 pink.draw();
+}
+else
+{
+    glPushMatrix();
+    translateBottomLeft();
+    translateToMazeCoords(11.4f, 13.5f); // Translate to the correct area of the screen ready for drawing
+    drawTex(gameover_tex,40, 8, 0);
+    glPopMatrix();
+}
 glutSwapBuffers();
 glutPostRedisplay();
 //pthread_mutex_unlock(&lock);
@@ -64,7 +77,7 @@ case GLUT_KEY_DOWN:
 pac.nexDirect=DOWNWARD;
 break;
 }
-//glutPostRedisplay();
+
 pthread_mutex_unlock(&lock);
 }
 void initOpenGL() {
@@ -87,7 +100,7 @@ int main(int argc, char** argv) {
 
     glutDisplayFunc(display);
     glutSpecialFunc(keyboard);
-
+   
 
     initOpenGL();
     pthread_create(&pacThread,NULL,Pacmove,(void *)&pac);

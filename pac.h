@@ -10,7 +10,7 @@ bool dead=false;
 bool bigBall=false;
 auto bigBallEffect_start = std::chrono::steady_clock::now();
 auto bigBallEffect_end = std::chrono::steady_clock::now();
-
+ int score;
 class Pac
 {
 public:
@@ -19,7 +19,7 @@ public:
     direc nexDirect;
     float angle;
     bool start;
-    int score;
+   
 
     Pac()
     {
@@ -64,11 +64,6 @@ public:
             bigBallEffect_start = std::chrono::steady_clock::now();
             total_dots--;
         }
-        else if(temp==F)
-        {
-            score+=100;
-            maze[(int) floor(X_cord)][(int) floor(Y_cord)]=s;
-        }
         else if(temp==T)
         {
             
@@ -82,8 +77,13 @@ public:
             }
         }
 
-        unsigned int pac_tex;    
-        pac_tex = pac_1_tex;
+        unsigned int pac_tex;  
+        auto currentTime = std::chrono::steady_clock::now();
+        auto eTime = std::chrono::duration_cast<std::chrono::seconds>(currentTime - startTime).count();
+int textureIndex = (eTime / 15) % 3; // Calculate texture index based on elapsed time
+pac_tex = pac_0_tex;
+
+        
         switch(pacDirect){ // Rotates pacman to face in his current travel direction
             case LEFT: angle = 0.0f;
                 break;
@@ -159,8 +159,16 @@ void* Pacmove(void* pac_void)
 {   sleep(3);
     Pac* pac = static_cast<Pac*>(pac_void);
     while(1)
-    {
-        if(lives==0)
+    {   if(total_dots<=0)
+        {
+            RecreateMaze();
+            X_cord = 13.5f;
+            Y_cord =  7.0f;
+            pac->pacDirect = STILL;
+            pac->nexDirect = STILL;
+            pac->start=true;
+        }
+        if(lives<=0)
         {
             break;
         }
