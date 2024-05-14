@@ -7,6 +7,7 @@ float X_cord;
 float Y_cord;
 float lives=3;
 bool dead=false;
+bool bigBall=false;
 class Pac
 {
 public:

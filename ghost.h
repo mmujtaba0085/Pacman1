@@ -76,7 +76,7 @@ float disINBtwPnG(float x1,float y1,float x2,float y2)          //to calculate d
     return sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2));
 }
 
-int nearestPosToPac()
+int PosToPac()
 {
     float dis=2000;
     int j=0;
@@ -92,6 +92,7 @@ int nearestPosToPac()
     }
     return j;
 }
+
 
 int possible_exit(float x,float y)
 {
@@ -158,7 +159,7 @@ direc movGhost(float &x,float &y,direc& prevGhostMov,bool change_dir,color col ,
         }
         else if(col==BLUE)
         {
-            int temp=nearestPosToPac();
+            int temp=PosToPac();
             x2=xx[temp];
             y2=yy[temp];
         }
@@ -177,12 +178,27 @@ direc movGhost(float &x,float &y,direc& prevGhostMov,bool change_dir,color col ,
             y2=yy[1];
         }
     }
+    else if(ghost->move_type==RunAway)
+    {
+        if(col==RED)   
+        {
+            x2=X_cord;
+            y2=Y_cord;
+        }
+        else if(col==BLUE)
+        {
+            int temp=PosToPac();
+            x2=xx[temp];
+            y2=yy[temp];
+        }
+        dis = 0;
+    }
     if(possible_exit(x,y)>2 && change_dir)
     {
     
     if(!GisWall(LEFT,x,y) && prevGhostMov!=RIGHT )
     {
-        if(dis > disINBtwPnG((x)-1,y,x2,y2))
+        if((dis > disINBtwPnG((x)-1,y,x2,y2) && ghost->move_type!=RunAway) || (dis < disINBtwPnG((x)-1,y,x2,y2) && ghost->move_type==RunAway) )
         {
         dis = disINBtwPnG(x-1,y,x2,y2);
         mov = LEFT;
@@ -190,7 +206,7 @@ direc movGhost(float &x,float &y,direc& prevGhostMov,bool change_dir,color col ,
     }
     if(!GisWall(UPWARD,x,y) && prevGhostMov!=DOWNWARD)
     {
-        if(dis > disINBtwPnG(x,y+1,x2,y2))
+        if((dis > disINBtwPnG(x,y+1,x2,y2)&& ghost->move_type!=RunAway) || (dis < disINBtwPnG(x,y+1,x2,y2)&& ghost->move_type==RunAway))
         {
         dis = disINBtwPnG(x,y+1,x2,y2);
         mov = UPWARD;
@@ -198,7 +214,7 @@ direc movGhost(float &x,float &y,direc& prevGhostMov,bool change_dir,color col ,
     }
     if(!GisWall(RIGHT,x,y) &&  prevGhostMov!=LEFT)
     {
-        if(dis> disINBtwPnG(x+1,y,x2,y2))
+        if((dis > disINBtwPnG(x+1,y,x2,y2)&& ghost->move_type!=RunAway) || (dis < disINBtwPnG(x+1,y,x2,y2)&& ghost->move_type==RunAway))
         {
         dis = disINBtwPnG(x+1,y,x2,y2);
         mov = RIGHT;
@@ -206,7 +222,7 @@ direc movGhost(float &x,float &y,direc& prevGhostMov,bool change_dir,color col ,
     }
     if(!GisWall(DOWNWARD,x,y) && prevGhostMov!=UPWARD)
     {
-        if(dis  > disINBtwPnG(x,y-1,x2,y2))
+        if((dis  > disINBtwPnG(x,y-1,x2,y2)&& ghost->move_type!=RunAway) || (dis  < disINBtwPnG(x,y-1,x2,y2)&& ghost->move_type==RunAway))
         {
         dis = disINBtwPnG(x,y-1,x2,y2);
         mov= DOWNWARD;
@@ -269,13 +285,15 @@ void* GnrlMov(void* ghost_void)
         {
             ghost->move_type = Scatter;
             ghost->total_scatter--;
-            std::cout<<"here"<<std::endl;
         }
         else if((eTime % 35 > 15) && ghost->move_type!=Follow)
         {
             ghost->move_type = Follow;
         }
+        // else if(bigBall)
+        // {
 
+        // }
         DirEndTime = std::chrono::steady_clock::now();
         elapsedSeconds = DirEndTime - DirStartTime;
 
