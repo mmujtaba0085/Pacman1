@@ -15,7 +15,7 @@ extern unsigned int maze_tex;
  *      O: Big Pill
  *      E: Eaten Big Pill
  */
-typedef enum {W, G, T, u, o, s, O, S, F} tile;
+typedef enum {W, G, T, u, o, s, O, S, F,A} tile;
 int total_dots=244;
 // 2D array defines the size of the maze and also what each tile contains
 tile maze[28][31] =
@@ -23,7 +23,7 @@ tile maze[28][31] =
                 {W,W,W,W,W,W,W,W,W,W,W,W,u,u,u,W,T,W,u,u,u,W,W,W,W,W,W,W,W,W,W},
                 {W,o,o,o,o,W,W,O,o,o,o,W,u,u,u,W,u,W,u,u,u,W,o,o,o,o,O,o,o,o,W},
                 {W,o,W,W,o,W,W,o,W,W,o,W,u,u,u,W,u,W,u,u,u,W,o,W,W,o,W,W,W,o,W},
-                {W,o,W,W,o,o,o,o,W,W,o,W,u,u,u,W,u,W,u,u,u,W,o,W,W,o,W,W,W,o,W},
+                {W,o,W,W,o,o,o,o,W,W,o,W,u,u,u,W,u,W,u,u,u,W,o,W,W,o,W,W,W,A,W},
                 {W,o,W,W,o,W,W,W,W,W,o,W,u,u,u,W,u,W,u,u,u,W,o,W,W,o,W,W,W,o,W},
                 {W,o,W,W,o,W,W,W,W,W,o,W,W,W,W,W,u,W,W,W,W,W,o,W,W,o,W,W,W,o,W},
                 {W,o,W,W,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,W},
@@ -44,7 +44,7 @@ tile maze[28][31] =
                 {W,o,W,W,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,o,W},
                 {W,o,W,W,o,W,W,W,W,W,o,W,W,W,W,W,u,W,W,W,W,W,o,W,W,o,W,W,W,o,W},
                 {W,o,W,W,o,W,W,W,W,W,o,W,u,u,u,W,u,W,u,u,u,W,o,W,W,o,W,W,W,o,W},
-                {W,o,W,W,o,o,o,o,W,W,o,W,u,u,u,W,u,W,u,u,u,W,o,W,W,o,W,W,W,o,W},
+                {W,A,W,W,o,o,o,o,W,W,o,W,u,u,u,W,u,W,u,u,u,W,o,W,W,o,W,W,W,o,W},
                 {W,o,W,W,o,W,W,o,W,W,o,W,u,u,u,W,u,W,u,u,u,W,o,W,W,o,W,W,W,o,W},
                 {W,o,o,o,o,W,W,O,o,o,o,W,u,u,u,W,u,W,u,u,u,W,o,o,o,o,O,o,o,o,W},
                 {W,W,W,W,W,W,W,W,W,W,W,W,u,u,u,W,T,W,u,u,u,W,W,W,W,W,W,W,W,W,W}
@@ -85,19 +85,11 @@ void drawMaze()
             {
                 drawTex(bigPill_tex, 8, 8, 0);
             }
-
-            // switch(maze[x][y]) {
-            //     case o:                 // Draw pills as sprites
-            //         drawTex(pill_tex, 8, 8, 0);
-            //         break;
-            //     case O:                 // Draw big pills as sprites
-            //         drawTex(bigPill_tex, 8, 8, 0);
-            //         break;
-            //     case F:
-            //         //drawFruit();
-            //         break;
-            // }
-
+            else if(temp==A)
+            {
+                drawTex(cherry_tex,8,8,0);
+            }
+            
             glTranslatef(0.0f, 8.0f, 0.0f); // Increment Y position
         }
            glPopMatrix();

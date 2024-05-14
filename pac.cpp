@@ -24,10 +24,10 @@ pthread_mutex_t lock;
 
 
 Pac pac;
-Ghost red(initalRed_X,initailRed_Y,RED);
-Ghost blue(initalBlue_X,initailBlue_Y,BLUE);
-Ghost pink(initialPink_X,initialPink_Y,PINK);
-Ghost yellow(initialYellow_X,initialYellow_Y,YELLOW);
+Ghost red(initalRed_X,initailRed_Y,RED,0.1);
+Ghost blue(initalBlue_X,initailBlue_Y,BLUE,0.1);
+Ghost pink(initialPink_X,initialPink_Y,PINK,0.08);
+Ghost yellow(initialYellow_X,initialYellow_Y,YELLOW,0.08);
 pthread_t pacThread;
 pthread_t RGhostThread;
 pthread_t BGhostThread;
