@@ -1,9 +1,3 @@
 # Pacman
 
-git status
-
-git add .
-
-git commit -m "message"
-
-git push -u origin main
+Operating System(OS) Project made on GLUT
